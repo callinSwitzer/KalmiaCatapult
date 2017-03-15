@@ -18,8 +18,11 @@
 # DS_Store
 .DS_Store
 
-# .csv (data) files
-*.csv
+# .csv (data) files, undo after paper is released
+*.csv 
+*.txt
+*.npy 
+
 
 # R project file
 *.Rproj
