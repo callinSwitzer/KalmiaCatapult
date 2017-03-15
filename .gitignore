@@ -1,6 +1,45 @@
+# python stuff
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+
+# Rproject stu
+.Rproj.user
+.Rproj*
+
+*/.Rproj.user/*
+.Rhistory
+.RData
+
 # History files
 .Rhistory
 .Rapp.history
+
+# DS_Store
+.DS_Store
+
+# .csv (data) files
+*.csv
+
+# R project file
+*.Rproj
+
+# latex file
+*.aux
+*.log
+*.gz
+
+# images
+*.png
+*.pdf
+
+# ms word
+*.docx
+*.doc
+
+# ms excel
+*.xls
+*.xlsx
 
 # Session Data files
 .RData
@@ -15,7 +54,7 @@
 /*.Rcheck/
 
 # RStudio files
-.Rproj.user/
+.Rproj.user/*
 
 # produced vignettes
 vignettes/*.html
@@ -27,7 +66,11 @@ vignettes/*.pdf
 # knitr and R markdown default cache directories
 /*_cache/
 /cache/
+/*cache/*
+*/*cache/*
+
 
 # Temporary files created by R markdown
 *.utf8.md
 *.knit.md
+.Rproj.user
