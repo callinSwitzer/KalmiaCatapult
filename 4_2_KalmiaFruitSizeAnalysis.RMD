@@ -13,6 +13,7 @@ output: html_document
 # 20 October 2016
 # 10 Feb 2017 Update: Conducted Statistical Modeling with LMER and GLMER
 # 11 March 2017 Update: added random effect to MER models to account for plant lineage
+# 24 April 2017 Update: changed figure labels
 </pre>
 
 
@@ -367,12 +368,11 @@ pp <- predict(m1.2, newdata = pframe, re.form=NA, type = 'response') # re.form s
 ##  according to this: http://rstudio-pubs-static.s3.amazonaws.com/24365_2803ab8299934e888a60e7b16113f619.html
 ## you can safely ignore the warnings about convergence
 
-bb2 <- bootMer(m1.2, FUN=function(x) predict(x, pframe, re.form=NA, type = 'response'), nsim = 999)
+bb2 <- bootMer(m1.2, FUN=function(x) predict(x, pframe, re.form=NA, type = 'response'), nsim = 1000)
 bb2_se <-apply(bb2$t,2,function(x) quantile(x, probs = c(0.025, 0.975)))
 pframe$blo<-bb2_se[1,]
 pframe$bhi<-bb2_se[2,]
 pframe$predMean <- pp
-
 
 # This method is the same, but less straightforward.
 # mm <- model.matrix(terms(m1.2), pframe)
@@ -385,11 +385,15 @@ pframe$predMean <- pp
 # pframe$bhi<-bb_se[2,]
 # pframe$predMean <- pp
 
+```
+
+
+```{R}
 pframe$median = tapply(cf1.1$Freq, INDEX = cf1.1$trt, median)
 pframe$trt <- mapvalues(pframe$trt, from = c("Control", "Bagged", "Bagged & Selfed", 
                                                 "Unbagged & Outcrossed"),
-                        to = c("Control", "Bagged", "Bagged\n & Selfed", 
-                                                "Outcrossed"))
+                        to = c("Control", "Autogamous-\nselfed", "Manipulated-\nselfed", 
+                                                "Supplemental-\noutcrossed"))
 pframe$trt <- relevel(pframe$trt, ref = "Control")
 
 #plot 95% confidence intervals
@@ -488,10 +492,10 @@ ggsave(paste0(saveDir, "KalmiaFruitDiameter_trt14Only.pdf"), width = 5, height =
 # Model Fruit Size with LMER
 ```{r}
 size1 <- within(kfrt, {
-     trt <- mapvalues(trt, c("Bagged", "Bagged & Selfed", "Unbagged", 
-                                                "Unbagged & Outcrossed", "Unbagged_2"), 
-                      c("Bagged", "Bagged\n & Selfed", "Control", 
-                                                "Outcrossed", "Control_2"))
+     trt <- mapvalues(trt, from = c("Bagged", "Bagged & Selfed", "Unbagged",
+                                                "Unbagged & Outcrossed", "Unbagged_2"),
+                        to = c("Autogamous-\nselfed", "Manipulated-\nselfed", "Control",
+                                                "Supplemental-\noutcrossed", "Control_2"))
 })
 
 size1 <- droplevels(size1[size1$trt != "Control_2",])
@@ -565,6 +569,7 @@ sf1<- within(size1, {
 
 # refit model with different reference levels
 f1 <- lmer(dia_mm ~ trt + (1|plantLineage) + (1|accessNum), data = sf1)
+summary(f1)
 pframe <- data.frame(trt = levels(droplevels(sf1$trt)))
 pframe$dia_mm = 0
 pp <- predict(f1, newdata = pframe, re.form=NA, type = 'response') # re.form sets all random effects to 0
@@ -573,7 +578,7 @@ pp <- predict(f1, newdata = pframe, re.form=NA, type = 'response') # re.form set
 ### Calculate CI's (using bootstrap, not accounting for random effects)
 mm <- model.matrix(terms(f1), pframe)
 predFun<-function(.) mm%*%fixef(.)
-bb<-bootMer(f1,FUN=predFun,nsim=999) #do this 200 times
+bb<-bootMer(f1,FUN=predFun,nsim = 1000) #do this 1000 times
 # get quantiles from bootstrap sample
 bb_se<-apply(bb$t,2,function(x) quantile(x, probs = c(0.025, 0.975)))
 pframe$blo<-bb_se[1,]
@@ -582,7 +587,10 @@ pframe$predMean <- pp
 pframe # print frame, in case reporting in a table
 
 pframe$trt <- relevel(pframe$trt, ref = "Control")
+```
 
+```{R}
+# refref here, labels are wrong!
 #plot 95% confidence intervals
 # "Mean and bootstrap CI based on fixed-effects uncertainty ONLY"
 g2 <- ggplot(pframe, aes(x=trt, y=predMean))+
@@ -595,15 +603,16 @@ g2 <- ggplot(pframe, aes(x=trt, y=predMean))+
      annotate(geom="text", x=c(1,2,3,4), y=c(5,5,5,5) + 0.7, label=c("a", "b", "a", "c"),
                color="black") 
 g2
+
 ggsave(paste0(saveDir, "KalmiaFruitDia_BSCI.pdf"), width = 3, height = 4)
 
  ## visualize raw data (mean fruit size per plant)
 
 sdf1 <- droplevels(within(sizeDF_mean[!(sizeDF_mean$trt %in% 'Control_2'), ], {
-     trt <- mapvalues(trt, c("Bagged", "Bagged & Selfed", "Control", 
-                                                "Unbagged & Outcrossed", "Control_2"), 
-                      c("Bagged", "Bagged\n & Selfed", "Control", 
-                                                "Outcrossed", "Control_2"))
+     trt <- mapvalues(trt, from = c("Control", "Bagged", "Bagged & Selfed", 
+                                                "Unbagged & Outcrossed"),
+                        to = c("Control", "Autogamous-\nselfed", "Manipulated-\nselfed", 
+                                                "Supplemental-\noutcrossed"))
 }))
 
 # visualize fruit size
