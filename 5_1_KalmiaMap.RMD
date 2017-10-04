@@ -1,0 +1,97 @@
+---
+title: "5_1_KalmiaMap"
+author: "Callin Switzer"
+date: "4 Oct 2017"
+output:
+  html_document: default
+  html: default
+---
+
+# Callin Switzer
+# Plot Kalmia locations in ggmaps
+```{R}
+library(ggmap)
+
+kaml <- read.csv("/Users/cswitzer/Dropbox/ExperSummer2016/Kalmia/Revision1_AmNat/Supp_File_1_kalmiaAccessions.csv")
+
+lat = kaml$Garden.Latitude
+lon <- kaml$Garden.Longitude
+
+df1 <- data.frame(lat, lon, as.character(kaml$Plant.ID))
+
+
+mapImageData1 <- get_map(location = c(lon = -71.125,  lat =  42.2996), 
+                         source = 'google',scale = 2,
+                         zoom = 15, maptype = "satellite",
+                         color = 'color')
+
+aa <- ggmap(mapImageData1) + 
+     geom_point(data = df1, aes(x = lon, y = lat), size = 1, alpha= 0.7, color = 'red') + 
+     #geom_text(data =  df1, aes(x = lon, y = lat ,label = as.character.kaml.Plant.ID.),hjust=0, vjust=0, size = 2) + 
+     scale_y_continuous(limits = c(42.2909, 42.308)) + 
+  scale_x_continuous(limits = c(-71.135, -71.115)) + 
+  labs(x = "Longitude", y = "Latitute")
+
+
+
+
+
+# add scalebar
+sb <- data.frame(xmin = -71.122, xmax = -71.140, ymin = 42.291, ymax = 42.291)
+sb$distance <- geosphere::distVincentyEllipsoid(c(sb$xmin,sb$ymin),
+                                                  c(sb$xmax,sb$ymax))
+
+
+scalebar.length <- 0.5
+sb$lon.end <- sb$xmin - ((sb$xmax-sb$xmin)/sb$distance)*scalebar.length*1000
+# pdf("~/Desktop/kalmiaMapLarge_legend.pdf", width = 9, height = 6)
+aa + geom_segment(data = sb, aes(x = xmin, xend = lon.end,  y = ymin, yend = ymax), color ="white", size = 2) + 
+  geom_text(data = sb, aes(x = (lon.end + xmin) / 2, y = ymin + 0.0005, 
+                           label = paste(scalebar.length, "km")), inherit.aes=F, color = "white") + 
+  geom_segment(data = sb, aes(x= -71.134, y = 42.306, xend = -71.134, yend = 42.3065), 
+               arrow = arrow(length = unit(0.2, "cm")), size = 1.2, 
+               color = 'white') + 
+  geom_text(data = sb, aes(label = "N", x = -71.134, y = 42.306 -0.0003), inherit.aes=F, color = "white") + 
+  geom_text(data = sb, aes(label = "Arnold Arboretum", x = -71.125, y = 42.299), inherit.aes=F, color = "white")
+#dev.off()
+
+
+#ggsave(filename = "~/Desktop/kalmiaMapLarge_legend.png", width = 9, height = 6)
+
+
+
+# make another map
+mapImageData1 <- get_map(location = c(lon = -71.125 + 0.04,  lat =  42.2996 + 0.04), 
+                         source = 'google',scale = 2,
+                         zoom = 12, maptype = "satellite",
+                         color = 'color')
+
+sb <- data.frame(xmin = -70.99, xmax = -71.10, ymin = 42.28, ymax = 42.28)
+sb$distance <- geosphere::distVincentyEllipsoid(c(sb$xmin,sb$ymin),
+                                                c(sb$xmax,sb$ymax))
+
+
+scalebar.length <- 5
+sb$lon.end <- sb$xmin + ((sb$xmax-sb$xmin)/sb$distance)*scalebar.length*1000
+
+
+
+ggmap(mapImageData1)  +
+ 
+  geom_point(data = df1[1, ], aes(x = lon, y = lat), size = 2, color = 'white') + 
+  geom_text(data = sb, aes(label = "Arnold Arboretum", x = -71.125, y = 42.299 + 0.002), 
+            inherit.aes=F, color = "white") + 
+  scale_y_continuous(limits = c(42.28, 42.4)) + 
+  labs(x = "Longitude", y= "Latitude") + 
+  geom_segment(data = sb, aes(x = xmin, xend = lon.end,  y = ymin, yend = ymax), color ="white", size = 2) + 
+  geom_text(data = sb, aes(x = (lon.end + xmin) / 2, y = ymin + 0.003, 
+                           label = paste(scalebar.length, "km")), inherit.aes=F, color = "white") + 
+  geom_segment(data = sb, aes(x= -71.18, y = 42.395, xend = -71.18, yend = 42.400), 
+               arrow = arrow(length = unit(0.2, "cm")), size = 1.2, 
+               color = 'white') + 
+  geom_text(data = sb, aes(label = "N", x = -71.18, y = 42.395 -0.002), inherit.aes=F, color = "white") + 
+  geom_point(aes(y = 42.354389, x = -71.065539), color = "white", size = 2) + 
+  geom_text(aes(y = 42.354389 + 0.003, x = -71.065539, label= "Boston Common"), color = 'white')
+  
+# ggsave(filename = "~/Desktop/BostonMap.png", width = 9, height = 6)
+```
